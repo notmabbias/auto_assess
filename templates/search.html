@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>Search Vehicle Database</h3>
+
+<p>Enter the vehicle details below to run a diagnostic check.</p>
+
+<form action="/analyze" method="POST">
+    <table border="1" cellpadding="5" cellspacing="0" width="80%" align="center" style="background-color: #ffffff;">
+        <tr>
+            <td width="30%"><b>Year:</b></td>
+            <td><input type="number" name="year" required style="width: 95%;" placeholder="e.g. 2006" min="1930" max="2026"></td>
+        </tr>
+        <tr>
+            <td><b>Make:</b></td>
+            <td><input type="text" name="make" required style="width: 95%;" placeholder="e.g. Honda"></td>
+        </tr>
+        <tr>
+            <td><b>Model:</b></td>
+            <td><input type="text" name="model" required style="width: 95%;" placeholder="e.g. Civic"></td>
+        </tr>
+        <tr>
+            <td valign="top"><b>Listing Text:</b><br><small>(Paste seller ad here)</small></td>
+            <td>
+                <textarea name="listing_text" rows="8" style="width: 95%; overflow: hidden;"></textarea>
+            </td>
+        </tr>
+        <!-- hidden CARFAX row -->
+        <tr id="carfax_row" style="display: none;">
+            <td valign="top"><b>CARFAX Text:</b><br><small>(Paste report here)</small></td>
+            <td>
+                <textarea name="carfax_text" rows="8" style="width: 95%; overflow: hidden;"></textarea>
+            </td>
+        </tr>
+    </table>
+    
+    <br>
+    <center>
+        <input type="button" id="carfax_btn" value="[+] Add CARFAX report">
+        <br><br>
+        <input type="submit" value=">> SEARCH <<">
+        <input type="reset" value="Clear">
+    </center>
+</form>
+
+<script src="{{ url_for('static', filename='search.js') }}"></script>
+{% endblock %}
