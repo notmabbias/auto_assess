@@ -5,17 +5,11 @@ app = Flask(__name__)
 
 @app.route("/")
 def hello_world():
-    return render_template('search.html')
-
-@app.route('/hello/')
-@app.route('/hello/<name>')
-def hello(name=None):
-    return render_template("hello.html",person=name)
+    return render_template('hello.html')
 
 
 @app.route('/search')
 def search_page():
-    # Flask automatically looks in the /templates folder
     return render_template('search.html')
 
 @app.route('/analyze', methods=['POST'])
@@ -33,3 +27,7 @@ def analyze_search():
         print(f"user searched for: {car_year} {car_make} {car_model}\nListing Text:\n{car_listing}\nCarfax Text\n{car_carfax}")
 
         return "<p>searching...</p>"
+
+@app.route('/deb')
+def video_page():
+    return render_template('video_page.html')

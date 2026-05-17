@@ -96,6 +96,6 @@ def debug_print_car_data(data):
     
     print("="*60 + "\n")
 
-tempID = getVehicleID("2006","Honda","Civic")
+tempID = getVehicleID("2006","Hona","Civic")
 if (tempID != 0):
     debug_print_car_data(getInformation(tempID))
