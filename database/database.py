@@ -26,7 +26,7 @@ def getVehicleID(year, make, model):
 # grab information from database as imperical data for our AI
 def getInformation(vID):
     # initalize database connection
-    conn = sqlite3.connect("car_data.db")
+    conn = sqlite3.connect(DB_PATH)
 
     # access columns by name
     conn.row_factory = sqlite3.Row 
