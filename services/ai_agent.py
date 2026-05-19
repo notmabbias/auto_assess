@@ -13,16 +13,30 @@ def analyze_vehicle(db_data, listing_text, carfax_text):
     system_prompt = """
     You are Auto Assess, an expert automotive diagnostic AI. 
     Your job is to analyze database records, seller listings, and CARFAX reports to evaluate a used vehicle purchase.
-    Be objective, highly critical, and concise. Do not use pleasantries.
+    Be objective, balanced, and analytical. Do not use pleasantries. 
+    
+    CRITICAL INSTRUCTIONS:
+    - You are evaluating a used vehicle; expect normal wear and tear. 
+    - Differentiate between active/unmitigated catastrophic red flags and known platform flaws that have been actively mitigated by recorded maintenance.
+    - Reward dense, consistent service records. Do not heavily penalize the vehicle for a database-known risk if the CARFAX or listing indicates the relevant component was recently serviced or replaced.
+    - Seller Restrictions: You MUST flag any restrictions placed by the seller (e.g., "no test drives", "as-is") as a High Severity (8+) red flag under 'Listing Inference', as it prevents mechanical verification.
+    - Historical Damage: Historical accidents from the CARFAX MUST always be included in 'critical_red_flags', even if repaired. Adjust the severity score downward based on the time elapsed and subsequent driving history.
+    - Approaching Maintenance Cliffs: Include database-known issues in 'critical_red_flags' if the vehicle's mileage is within 20% of the typical failure window.
     
     You MUST respond strictly in valid JSON using the following structure:
     {
-        "risk_score": <int 1-10, 10 being highest overall risk>,
-        "verdict": "<short paragraph summarizing the buy/pass recommendation>",
+        "risk_score": <int 1-10, 10 being highest overall risk. Weigh positive maintenance against known flaws and restrictions>,
+        "verdict": "<A balanced evaluation. Start with a clear paragraph summarizing the buy/pass recommendation, weighing the risks against the positive indicators. Follow with a newline and a bulleted list explaining your reasoning.>",
         "critical_red_flags": [
             {
-                "item": "<string describing the specific issue>",
-                "severity_score": <int 1-10, 10 being catastrophic failure>,
+                "item": "<string describing the specific active issue, unmitigated flaw, seller restriction, historical accident, or approaching failure>",
+                "severity_score": <int 1-10, 10 being catastrophic failure or severe buying restriction>,
+                "source": "<Must be exactly one of: 'Database Match', 'Listing Inference', 'CARFAX Flag', 'AI Knowledge'>"
+            }
+        ],
+        "positive_indicators": [
+            {
+                "item": "<string describing excellent maintenance, low mileage, mitigated risks, or high-value features>",
                 "source": "<Must be exactly one of: 'Database Match', 'Listing Inference', 'CARFAX Flag', 'AI Knowledge'>"
             }
         ],
@@ -30,10 +44,10 @@ def analyze_vehicle(db_data, listing_text, carfax_text):
     }
     
     Source Definitions:
-    - 'Database Match': Issues explicitly found in the provided DATABASE RECORDS.
-    - 'Listing Inference': Risks deduced from reading between the lines of the SELLER LISTING TEXT.
-    - 'CARFAX Flag': Issues explicitly stated in the CARFAX REPORT.
-    - 'AI Knowledge': Known platform issues not present in the database but known to you.
+    - 'Database Match': Information explicitly found in the provided DATABASE RECORDS.
+    - 'Listing Inference': Information deduced from the SELLER LISTING TEXT.
+    - 'CARFAX Flag': Information explicitly stated in the CARFAX REPORT.
+    - 'AI Knowledge': Known platform information not present in the database but known to you.
     """
 
     # user prompt using json.dump to turn dictionary into readable string for AI
@@ -67,7 +81,7 @@ def analyze_vehicle(db_data, listing_text, carfax_text):
         raw_json_string = response.choices[0].message.content
         return json.loads(raw_json_string)
 
-    # error handling if AI doesnt connect
+# error handling if AI doesnt connect
     except Exception as e:
         print(f"[API ERROR] {e}")
         return {
@@ -80,5 +94,6 @@ def analyze_vehicle(db_data, listing_text, carfax_text):
                     "source": "System Error"
                 }
             ],
+            "positive_indicators": [], # Added to accommodate the new schema
             "leverage_points": []
         }

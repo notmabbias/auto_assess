@@ -62,6 +62,29 @@ def getInformation(vID):
     return master_data
 
 
+def create_search(uuid, make, model, year, listing, carfax):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('''
+            INSERT INTO Saved_Searches (
+                uuid,
+                input_make,
+                input_model,
+                input_year,
+                raw_ad_text,
+                raw_carfax_text,
+                ai_analysis_json,
+                input_kms
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (uuid, make, model, year, listing, carfax, '{}', -1))
+        
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"[DB ERROR] failed to create pending search for {year} {make} {model}: {e}")
+    finally:
+        conn.close()
 
 # debug print
 def debug_print_car_data(data):
@@ -96,6 +119,9 @@ def debug_print_car_data(data):
     
     print("="*60 + "\n")
 
-tempID = getVehicleID("2006","Hona","Civic")
-if (tempID != 0):
-    debug_print_car_data(getInformation(tempID))
+
+
+# tempID = getVehicleID("2015","Hyundai","Genesis Coupe")
+
+ #if (tempID != 0):
+    #debug_print_car_data(getInformation(tempID))

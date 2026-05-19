@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from database import database
 from services import ai_agent as ai
 import json
+import uuid
 
 app = Flask(__name__)
 
@@ -16,31 +17,37 @@ def search_page():
 
 @app.route('/analyze', methods=['POST'])
 def analyze_search():
-        # use request to store form contents
-        car_make = request.form.get('make')
-        car_model = request.form.get('model')
+    # grab inputs and sanitize strings
+    car_make = request.form.get('make', '').strip()
+    car_model = request.form.get('model', '').strip()
+    car_listing = request.form.get('listing_text', '').strip()
+    car_carfax = request.form.get('carfax_text', '').strip()
 
-        car_listing = request.form.get('listing_text')
-        car_carfax = request.form.get('carfax_text')
+    # parse int from year
+    try:
+        car_year = int(request.form.get('year', 0))
+    except ValueError:
+        return "Error, year invalid", 400
+        
+    # grab vehicle id and handle cars not in db
+    vehicle_id = database.getVehicleID(car_year, car_make, car_model)
+    if not vehicle_id:
+        return f"Error: {car_year} {car_make} {car_model} is not supported in the database", 404
 
-        # cast to int since form sends strings
-        car_year = int(request.form.get('year'))
+    # implement search save logic !!!
+    search_uuid = str(uuid.uuid4())
 
-        print(f"user searched for: {car_year} {car_make} {car_model}\nListing Text:\n{car_listing}\nCarfax Text\n{car_carfax}")
+    database.create_search(
+       uuid=search_uuid,
+       make=car_make,
+       model=car_model,
+       year=car_year,
+       listing=car_listing,
+       carfax=car_carfax 
+    )
 
-        # sanitize inputs !!!
+    return redirect(url_for('hello_world', search_uuid=search_uuid))
 
-        vehicle_id = database.getVehicleID(car_year, car_make, car_model)
-        vehicle_information = database.getInformation(vehicle_id)
-
-        database.debug_print_car_data(vehicle_information)
-
-        result = ai.analyze_vehicle(vehicle_information, car_listing, car_carfax)
-
-        print(json.dumps(result, indent=4))
-
-
-        return f"{vehicle_information}"
 
 @app.route('/deb')
 def video_page():
