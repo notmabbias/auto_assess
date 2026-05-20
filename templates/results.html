@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .report-card {
+        background: #d8d8d8;
+        border: 2px solid #000000;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .report-header {
+        border-bottom: 2px solid #000000;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+    .score-container {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #000000;
+        color: #ffffff;
+        padding: 10px 20px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+    .score-num {
+        font-size: 1.5em;
+        background: #ffffff;
+        color: #000000;
+        padding: 2px 10px;
+        border: 2px solid #ffffff;
+    }
+    .verdict-box {
+        white-space: pre-wrap; 
+        line-height: 1.4;
+        background: #f0f0f0;
+        border: 1px solid #000000;
+        padding: 15px;
+    }
+    .badge {
+        font-size: 0.85em;
+        font-weight: bold;
+        text-transform: uppercase;
+        border: 1px solid #000000;
+        padding: 1px 4px;
+        background: #e0e0e0;
+    }
+    .severity-high { background: #ff4d4d; color: #ffffff; }
+    .severity-med  { background: #ffa64d; color: #000000; }
+    .severity-low  { background: #ffff66; color: #000000; }
+    
+    ul.report-list {
+        list-style-type: square;
+        padding-left: 20px;
+    }
+    ul.report-list li {
+        margin-bottom: 10px;
+    }
+</style>
+
+<!-- risk Evaluation Header Block -->
+<div class="score-container">
+    <span>SYSTEM OVERALL RISK ASSESSMENT:</span>
+    <span class="score-num">
+        {% if result.risk_score == -1 %}
+            ERR
+        {% else %}
+            {{ result.risk_score }} / 10
+        {% endif %}
+    </span>
+</div>
+
+<!-- the Narrative Verdict -->
+<div class="report-card">
+    <div class="report-header">[ ANALYSIS VERDICT ]</div>
+    <div class="verdict-box">{{ result.verdict }}</div>
+</div>
+
+<!-- critical Red Flags Window -->
+<div class="report-card">
+    <div class="report-header">[ CRITICAL RED FLAGS DETECTED ]</div>
+    {% if result.critical_red_flags %}
+        <ul class="report-list">
+            {% for flag in result.critical_red_flags %}
+                <li>
+                    <strong>{{ flag.item }}</strong><br>
+                    <span class="badge">Source: {{ flag.source }}</span>
+                    <span class="badge 
+                        {% if flag.severity_score >= 8 %}severity-high
+                        {% elif flag.severity_score >= 5 %}severity-med
+                        {% else %}severity-low{% endif %}">
+                        Severity: {{ flag.severity_score }}/10
+                    </span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No major red flags extracted from the dataset profile.</p>
+    {% endif %}
+</div>
+
+<!-- positive Mitigations Window -->
+<div class="report-card">
+    <div class="report-header">[ POSITIVE INDICATORS & RISK MITIGATIONS ]</div>
+    {% if result.positive_indicators %}
+        <ul class="report-list">
+            {% for indicator in result.positive_indicators %}
+                <li>
+                    <strong>{{ indicator.item }}</strong><br>
+                    <span class="badge">Source: {{ indicator.source }}</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No outstanding positive indicators verified in current context mapping.</p>
+    {% endif %}
+</div>
+
+<!-- negotiation Leverage Targets -->
+<div class="report-card">
+    <div class="report-header">[ NEGOTIATION LEVERAGE POINTS ]</div>
+    {% if result.leverage_points %}
+        <ul class="report-list">
+            {% for point in result.leverage_points %}
+                <li>{{ point }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No strategic transactional levers generated for current query context.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

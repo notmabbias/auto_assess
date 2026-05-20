@@ -62,7 +62,7 @@ def getInformation(vID):
     return master_data
 
 
-def create_search(uuid, make, model, year, listing, carfax):
+def create_pending_search(uuid, make, model, year, listing, carfax):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
@@ -83,6 +83,38 @@ def create_search(uuid, make, model, year, listing, carfax):
         conn.commit()
     except sqlite3.Error as e:
         print(f"[DB ERROR] failed to create pending search for {year} {make} {model}: {e}")
+    finally:
+        conn.close()
+
+def get_pending_search(uuid):
+    # grab data from uuid
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    row = None
+    try:
+        cursor.execute('''
+            SELECT input_make, input_model, input_year, raw_ad_text, raw_carfax_text, ai_analysis_json 
+            FROM Saved_Searches WHERE uuid = ?
+        ''', (uuid,))
+        row = cursor.fetchone()
+    except sqlite3.Error as e:
+        print(f"[DB ERROR] Query extraction execution failure: {e}")
+    finally:
+        conn.close()
+    return row
+
+def save_ai_result(uuid, ai_json_str):
+    # save result from AI after its done (takes a few seconds normally)
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute('''
+            UPDATE Saved_Searches SET ai_analysis_json = ? WHERE uuid = ?
+        ''', (ai_json_str, uuid))
+        conn.commit()
+    except sqlite3.Error as e:
+        print(f"[DB ERROR] Overwrite execution error on save: {e}")
     finally:
         conn.close()
 

@@ -16,10 +16,11 @@ def analyze_vehicle(db_data, listing_text, carfax_text):
     Be objective, balanced, and analytical. Do not use pleasantries. 
     
     CRITICAL INSTRUCTIONS:
+    - Brevity Rule: You must use plain language and minimal adjectives/adverbs. Get straight to the point. Strip out all filler text, and excessive explanations.
     - You are evaluating a used vehicle; expect normal wear and tear. 
     - Differentiate between active/unmitigated catastrophic red flags and known platform flaws that have been actively mitigated by recorded maintenance.
     - Reward dense, consistent service records. Do not heavily penalize the vehicle for a database-known risk if the CARFAX or listing indicates the relevant component was recently serviced or replaced.
-    - Seller Restrictions: You MUST flag any restrictions placed by the seller (e.g., "no test drives", "as-is") as a High Severity (8+) red flag under 'Listing Inference', as it prevents mechanical verification.
+    - Seller Restrictions: You MUST flag EXPLICIT restrictions placed by the seller (e.g., "no test drives", "as-is") as a High Severity (8+) red flag under 'Listing Inference'. DO NOT infer restrictions from silence; only flag them if explicitly written in the listing text.
     - Historical Damage: Historical accidents from the CARFAX MUST always be included in 'critical_red_flags', even if repaired. Adjust the severity score downward based on the time elapsed and subsequent driving history.
     - Approaching Maintenance Cliffs: Include database-known issues in 'critical_red_flags' if the vehicle's mileage is within 20% of the typical failure window.
     
@@ -48,7 +49,7 @@ def analyze_vehicle(db_data, listing_text, carfax_text):
     - 'Listing Inference': Information deduced from the SELLER LISTING TEXT.
     - 'CARFAX Flag': Information explicitly stated in the CARFAX REPORT.
     - 'AI Knowledge': Known platform information not present in the database but known to you.
-    """
+        """
 
     # user prompt using json.dump to turn dictionary into readable string for AI
     user_prompt = f"""
@@ -64,7 +65,7 @@ def analyze_vehicle(db_data, listing_text, carfax_text):
 
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-5.1",
             temperature=0.2, # low temp to focus on objective answer
             response_format={ "type": "json_object" }, # force return as JSON for frontend
             messages=[
@@ -75,7 +76,19 @@ def analyze_vehicle(db_data, listing_text, carfax_text):
 
         # print number of tokens used in console
         usage = response.usage
-        print(f"[API USAGE] Prompt Tokens: {usage.prompt_tokens} | Completion Tokens: {usage.completion_tokens} | Total: {usage.total_tokens}")
+
+        # Calculate approximate cost based on gpt-5.1 pricing per 1M tokens
+        cached_tokens = getattr(usage.prompt_tokens_details, 'cached_tokens', 0) if hasattr(usage, 'prompt_tokens_details') else 0
+        uncached_prompt_tokens = usage.prompt_tokens - cached_tokens
+        
+        # calculate approx cost per request 
+        cost = (
+            (uncached_prompt_tokens * 1.25 / 1_000_000) + 
+            (cached_tokens * 0.125 / 1_000_000) + 
+            (usage.completion_tokens * 10.00 / 1_000_000)
+        )
+
+        print(f"[API USAGE] Prompt Tokens: {usage.prompt_tokens} (Cached: {cached_tokens}) | Completion Tokens: {usage.completion_tokens} | Total: {usage.total_tokens} | Cost: ${cost:.3f}")
 
         # grab relevant response and return
         raw_json_string = response.choices[0].message.content

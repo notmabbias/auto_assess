@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from database import database
 from services import ai_agent as ai
 import json
@@ -37,7 +37,7 @@ def analyze_search():
     # implement search save logic !!!
     search_uuid = str(uuid.uuid4())
 
-    database.create_search(
+    database.create_pending_search(
        uuid=search_uuid,
        make=car_make,
        model=car_model,
@@ -46,7 +46,49 @@ def analyze_search():
        carfax=car_carfax 
     )
 
-    return redirect(url_for('hello_world', search_uuid=search_uuid))
+    return redirect(url_for('loading', search_uuid=search_uuid))
+
+@app.route('/loading/<search_uuid>', methods=['GET'])
+def loading(search_uuid):
+    return render_template('loading.html', search_uuid=search_uuid)
+
+@app.route('/process/<search_uuid>', methods=['POST'])
+def process_search(search_uuid):
+    # grab items from form 
+    search_record = database.get_pending_search(search_uuid)
+    if not search_record:
+        # lazy error handling, but works
+        return jsonify({"status": "error", "message": "Target session token expired or invalid."}), 404
+    
+    # grab data on vehicle from db to send to ai
+    vehicle_id = database.getVehicleID(
+        search_record['input_year'], 
+        search_record['input_make'], 
+        search_record['input_model']
+    )
+    vehicle_information = database.getInformation(vehicle_id)
+
+    # call ai with information gathered by user
+    result = ai.analyze_vehicle(
+        vehicle_information, 
+        search_record['raw_ad_text'], 
+        search_record['raw_carfax_text']
+    )
+
+    # save ai into saved results
+    database.save_ai_result(search_uuid, json.dumps(result))
+
+    return jsonify({"status":"success"})
+
+@app.route('/results/<search_uuid>', methods=['GET'])
+def view_results(search_uuid):
+    # retrieve finalized analysis 
+    search_record = database.get_pending_search(search_uuid)
+    if not search_record or not search_record['ai_analysis_json']:
+        return redirect(url_for('search'))
+        
+    analysis_data = json.loads(search_record['ai_analysis_json'])
+    return render_template('results.html', result=analysis_data)
 
 
 @app.route('/deb')
