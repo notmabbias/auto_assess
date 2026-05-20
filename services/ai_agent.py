@@ -26,6 +26,11 @@ def analyze_vehicle(db_data, listing_text, carfax_text):
     
     You MUST respond strictly in valid JSON using the following structure:
     {
+        "year": "<string, the 4-digit model year>",
+        "make": "<string, the vehicle manufacturer>",
+        "model": "<string, the specific vehicle model and trim>",
+        "kms": "<string, the total distance driven in kilometers, formatted with commas, e.g., '63,000'>",
+        "price": "<string, the vehicle asking price including currency symbol, e.g., 'CA$19,000'>",
         "risk_score": <int 1-10, 10 being highest overall risk. Weigh positive maintenance against known flaws and restrictions>,
         "verdict": "<A balanced evaluation. Start with a clear paragraph summarizing the buy/pass recommendation, weighing the risks against the positive indicators. Follow with a newline and a bulleted list explaining your reasoning.>",
         "critical_red_flags": [
