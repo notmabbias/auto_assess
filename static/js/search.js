@@ -28,6 +28,9 @@ document.addEventListener("DOMContentLoaded", function() {
         "2007": {
             "Nissan": ["350Z"]
         },
+        "2012": {
+            "Volkswagen": ["Golf R"]
+        },
         "2015": {
             "Chevrolet": ["Corvette"],
             "Hyundai": ["Genesis Coupe"]

@@ -105,7 +105,7 @@
         {{ result.price }}
     </div>
     <div class="vehicle-image-placeholder">
-        <img src="../static/images/placeholder.jpeg" alt="[ IMG ]">
+        <img src="{{ url_for('static', filename='images/%s.jpg' | format(result.vehicle_id)) }}" alt="[ IMG ]">
     </div>
 </div>
 

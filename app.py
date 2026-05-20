@@ -18,8 +18,8 @@ def search_page():
 @app.route('/analyze', methods=['POST'])
 def analyze_search():
     # grab inputs and sanitize strings
-    car_make = request.form.get('make', '').strip()
-    car_model = request.form.get('model', '').strip()
+    car_make = request.form.get('make', '').strip().lower()
+    car_model = request.form.get('model', '').strip().lower()
     car_listing = request.form.get('listing_text', '').strip()
     car_carfax = request.form.get('carfax_text', '').strip()
 
@@ -72,7 +72,8 @@ def process_search(search_uuid):
     result = ai.analyze_vehicle(
         vehicle_information, 
         search_record['raw_ad_text'], 
-        search_record['raw_carfax_text']
+        search_record['raw_carfax_text'],
+        vehicle_id
     )
 
     # save ai into saved results

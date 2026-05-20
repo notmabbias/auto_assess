@@ -8,7 +8,7 @@ load_dotenv()
 # create client, grabs api key automatically
 client = OpenAI()
 
-def analyze_vehicle(db_data, listing_text, carfax_text):
+def analyze_vehicle(db_data, listing_text, carfax_text, vehicle_id):
     # prompt to tell AI what to do with information, and response
     system_prompt = """
     You are Auto Assess, an expert automotive diagnostic AI. 
@@ -95,9 +95,14 @@ def analyze_vehicle(db_data, listing_text, carfax_text):
 
         print(f"[API USAGE] Prompt Tokens: {usage.prompt_tokens} (Cached: {cached_tokens}) | Completion Tokens: {usage.completion_tokens} | Total: {usage.total_tokens} | Cost: ${cost:.3f}")
 
-        # grab relevant response and return
+       # grab relevant response, inject vehicle_id, and return
         raw_json_string = response.choices[0].message.content
-        return json.loads(raw_json_string)
+        analysis_data = json.loads(raw_json_string)
+        
+        # inject the ID directly into the dictionary root
+        analysis_data['vehicle_id'] = vehicle_id 
+        
+        return analysis_data
 
 # error handling if AI doesnt connect
     except Exception as e:
