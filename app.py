@@ -34,7 +34,6 @@ def analyze_search():
     if not vehicle_id:
         return f"Error: {car_year} {car_make} {car_model} is not supported in the database", 404
 
-    # implement search save logic !!!
     search_uuid = str(uuid.uuid4())
 
     database.create_pending_search(
