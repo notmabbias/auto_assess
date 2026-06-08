@@ -53,7 +53,7 @@ def loading(search_uuid):
 
 @app.route('/process/<search_uuid>', methods=['POST'])
 def process_search(search_uuid):
-    # grab items from form 
+
     search_record = database.get_pending_search(search_uuid)
     if not search_record:
         # lazy error handling, but works
@@ -67,7 +67,6 @@ def process_search(search_uuid):
     )
     vehicle_information = database.getInformation(vehicle_id)
 
-    # call ai with information gathered by user
     result = ai.analyze_vehicle(
         vehicle_information, 
         search_record['raw_ad_text'], 
@@ -91,6 +90,19 @@ def view_results(search_uuid):
     return render_template('results.html', result=analysis_data)
 
 
-@app.route('/deb')
-def video_page():
-    return render_template('video_page.html')
+@app.route('/retrieve', methods=['GET', 'POST'])
+def retrieve_search():
+    error = None
+    if request.method == 'POST':
+        search_uuid = request.form.get('uuid', '').strip()
+        
+        # check if the UUID exists in the database
+        record = database.get_pending_search(search_uuid)
+        
+        # verify the record exists and the AI actually completed the JSON generation
+        if record and record['ai_analysis_json'] and record['ai_analysis_json'] != '{}':
+            return redirect(url_for('view_results', search_uuid=search_uuid))
+        else:
+            error = "ERROR: Search ID not found or analysis incomplete."
+            
+    return render_template('retrieve.html', error=error)

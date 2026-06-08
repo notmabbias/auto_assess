@@ -58,6 +58,7 @@ def getInformation(vID):
     for row in i_rows:
         master_data["known_issues"].append(dict(row))
 
+
     conn.close()
     return master_data
 

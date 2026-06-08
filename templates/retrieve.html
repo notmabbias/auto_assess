@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>Retrieve Prior Analysis</h3>
+
+<p>Enter your 36-character Search ID (UUID) below to retrieve a previously generated vehicle report.</p>
+
+{% if error %}
+<div style="background-color: #ff4d4d; color: white; padding: 10px; border: 2px solid #000; margin-bottom: 20px; font-weight: bold;">
+    {{ error }}
+</div>
+{% endif %}
+
+<form action="/retrieve" method="POST">
+    <table border="1" cellpadding="5" cellspacing="0" width="80%" align="center" style="background-color: #ffffff;">
+        <tr>
+            <td width="30%"><b>Search ID:</b></td>
+            <td>
+                <input type="text" name="uuid" required style="width: 95%; font-family: monospace;" placeholder="e.g. 20ea20a3-89c9-4eea-8934-f37aafee2ebe">
+            </td>
+        </tr>
+    </table>
+    
+    <br>
+    <center>
+        <input type="submit" value=">> FETCH REPORT <<">
+    </center>
+</form>
+
+{% endblock %}

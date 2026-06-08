@@ -1,91 +1,6 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<style>
-    .report-card {
-        background: #d8d8d8;
-        border: 2px solid #000000;
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-    .report-header {
-        border-bottom: 2px solid #000000;
-        padding-bottom: 5px;
-        margin-bottom: 15px;
-        font-weight: bold;
-    }
-    .score-container {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        background: #000000;
-        color: #ffffff;
-        padding: 10px 20px;
-        font-weight: bold;
-        margin-bottom: 20px;
-    }
-    .score-num {
-        font-size: 1.5em;
-        background: #ffffff;
-        color: #000000;
-        padding: 2px 10px;
-        border: 2px solid #ffffff;
-    }
-    
-    .vehicle-info-flex {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    .vehicle-text {
-        font-size: 1.2em;
-        line-height: 1.6;
-    }
-    .vehicle-image-placeholder {
-        width: 120px;
-        height: 120px;
-        border: 2px solid #000000;
-        background: #f0f0f0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
-    .vehicle-image-placeholder img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-
-    .verdict-box {
-        white-space: pre-wrap; 
-        line-height: 1.4;
-        background: #f0f0f0;
-        border: 1px solid #000000;
-        padding: 15px;
-    }
-    .badge {
-        font-size: 0.85em;
-        font-weight: bold;
-        text-transform: uppercase;
-        border: 1px solid #000000;
-        padding: 1px 4px;
-        background: #e0e0e0;
-    }
-    .severity-high { background: #ff4d4d; color: #ffffff; }
-    .severity-med  { background: #ffa64d; color: #000000; }
-    .severity-low  { background: #ffff66; color: #000000; }
-    
-    ul.report-list {
-        list-style-type: square;
-        padding-left: 20px;
-    }
-    ul.report-list li {
-        margin-bottom: 10px;
-    }
-</style>
-
-<!-- risk EValuation header -->
 <div class="score-container">
     <span>SYSTEM OVERALL RISK ASSESSMENT:</span>
     <span class="score-num">
@@ -97,7 +12,6 @@
     </span>
 </div>
 
-<!-- vehicle information -->
 <div class="report-card vehicle-info-flex">
     <div class="vehicle-text">
         <strong>{{ result.year }} {{ result.make }} {{ result.model }}</strong><br>
@@ -114,7 +28,6 @@
     <div class="verdict-box">{{ result.verdict }}</div>
 </div>
 
-<!-- critical red flags window -->
 <div class="report-card">
     <div class="report-header">[ CRITICAL RED FLAGS DETECTED ]</div>
     {% if result.critical_red_flags %}
@@ -137,7 +50,6 @@
     {% endif %}
 </div>
 
-<!-- positive mitigations window -->
 <div class="report-card">
     <div class="report-header">[ POSITIVE INDICATORS & RISK MITIGATIONS ]</div>
     {% if result.positive_indicators %}
@@ -154,7 +66,6 @@
     {% endif %}
 </div>
 
-<!-- negotiation leverage targets -->
 <div class="report-card">
     <div class="report-header">[ NEGOTIATION LEVERAGE POINTS ]</div>
     {% if result.leverage_points %}
@@ -167,5 +78,15 @@
         <p>No strategic transactional levers generated for current query context.</p>
     {% endif %}
 </div>
+
+<div class="report-card" style="text-align: center;">
+    <div class="report-header" style="text-align: left;">[ SAVE / RETRIEVE ID ]</div>
+    <p style="margin-bottom: 10px;">Save this Search ID to retrieve this report later without using API credits:</p>
+    <input type="text" id="search_id_field" readonly style="width: 50%; font-family: monospace; text-align: center; background: #f0f0f0; border: 1px solid #000; padding: 6px;">
+    <button onclick="copySearchID()" class="copy-btn">Copy ID</button>
+    <span id="copy_status" style="margin-left: 10px; font-weight: bold; color: #000; background: #ffff66; padding: 2px 6px; display: none; border: 1px solid #000;">COPIED</span>
+</div>
+
+<script src="{{ url_for('static', filename='js/results.js') }}"></script>
 
 {% endblock %}
